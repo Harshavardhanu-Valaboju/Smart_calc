@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Smart Vision Calculator</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+    }
+
+    button.number {
+      margin: 5px;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .selected {
+      background-color: lightgreen;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Smart Vision Calculator</h1>
+
+<input type="file" id="imageInput">
+<button onclick="uploadImage()">Scan</button>
+
+<h3>Detected Numbers:</h3>
+<div id="numbers"></div>
+
+<h3>Result:</h3>
+<h2 id="result">0</h2>
+
+<button onclick="calculate()">Calculate Sum</button>
+
+<script>
+let selected = [];
+
+async function uploadImage() {
+  const file = document.getElementById("imageInput").files[0];
+
+  const formData = new FormData();
+  formData.append("image", file);
+
+  const res = await fetch("http://127.0.0.1:5000/scan", {
+    method: "POST",
+    body: formData
+  });
+
+  const data = await res.json();
+  displayNumbers(data.numbers);
+}
+
+function displayNumbers(numbers) {
+  const container = document.getElementById("numbers");
+  container.innerHTML = "";
+
+  selected = [];
+
+  numbers.forEach(num => {
+    const btn = document.createElement("button");
+    btn.innerText = num;
+    btn.className = "number";
+
+    btn.onclick = () => toggle(btn, num);
+
+    container.appendChild(btn);
+  });
+}
+
+function toggle(button, num) {
+  if (selected.includes(num)) {
+    selected = selected.filter(n => n !== num);
+    button.classList.remove("selected");
+  } else {
+    selected.push(num);
+    button.classList.add("selected");
+  }
+}
+
+function calculate() {
+  let sum = selected.reduce((a, b) => a + Number(b), 0);
+  document.getElementById("result").innerText = sum;
+}
+</script>
+
+</body>
+</html>
