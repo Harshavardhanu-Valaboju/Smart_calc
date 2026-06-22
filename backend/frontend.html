@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-  <title>Smart Vision Calculator</title>
-  <style>
-    body {
-      font-family: Arial;
-      padding: 20px;
-    }
+    <title>Smart Vision Calculator</title>
 
-    button.number {
-      margin: 5px;
-      padding: 10px;
-      font-size: 16px;
-      cursor: pointer;
-    }
+    <style>
 
-    .selected {
-      background-color: lightgreen;
-    }
-  </style>
+        body{
+            font-family: Arial;
+            padding:20px;
+        }
+
+        .number-btn{
+            margin:5px;
+            padding:10px;
+            cursor:pointer;
+        }
+
+        .selected{
+            background-color:lightgreen;
+        }
+
+    </style>
+
 </head>
 
 <body>
@@ -26,66 +30,142 @@
 <h1>Smart Vision Calculator</h1>
 
 <input type="file" id="imageInput">
-<button onclick="uploadImage()">Scan</button>
 
-<h3>Detected Numbers:</h3>
+<button onclick="uploadImage()">
+    Scan
+</button>
+
+<hr>
+
+<h3>Detected Numbers</h3>
+
 <div id="numbers"></div>
 
-<h3>Result:</h3>
-<h2 id="result">0</h2>
+<hr>
 
-<button onclick="calculate()">Calculate Sum</button>
+<button onclick="calculate('+')">Add</button>
+<button onclick="calculate('-')">Subtract</button>
+<button onclick="calculate('*')">Multiply</button>
+<button onclick="calculate('/')">Divide</button>
+
+<h2>Result:</h2>
+
+<h1 id="result">0</h1>
 
 <script>
+
 let selected = [];
 
-async function uploadImage() {
-  const file = document.getElementById("imageInput").files[0];
+async function uploadImage(){
 
-  const formData = new FormData();
-  formData.append("image", file);
+    const file =
+    document.getElementById("imageInput").files[0];
 
-  const res = await fetch("http://127.0.0.1:5000/scan", {
-    method: "POST",
-    body: formData
-  });
+    if(!file){
+        alert("Please select an image");
+        return;
+    }
 
-  const data = await res.json();
-  displayNumbers(data.numbers);
+    const formData = new FormData();
+
+    formData.append("image", file);
+
+    const response =
+    await fetch(
+        "http://127.0.0.1:5000/scan",
+        {
+            method:"POST",
+            body:formData
+        }
+    );
+
+    const data =
+    await response.json();
+
+    displayNumbers(data.numbers);
 }
 
-function displayNumbers(numbers) {
-  const container = document.getElementById("numbers");
-  container.innerHTML = "";
+function displayNumbers(numbers){
 
-  selected = [];
+    const container =
+    document.getElementById("numbers");
 
-  numbers.forEach(num => {
-    const btn = document.createElement("button");
-    btn.innerText = num;
-    btn.className = "number";
+    container.innerHTML = "";
 
-    btn.onclick = () => toggle(btn, num);
+    selected = [];
 
-    container.appendChild(btn);
-  });
+    numbers.forEach(num => {
+
+        const btn =
+        document.createElement("button");
+
+        btn.innerText = num;
+
+        btn.className = "number-btn";
+
+        btn.onclick = () => toggle(btn, num);
+
+        container.appendChild(btn);
+
+    });
+
 }
 
-function toggle(button, num) {
-  if (selected.includes(num)) {
-    selected = selected.filter(n => n !== num);
-    button.classList.remove("selected");
-  } else {
-    selected.push(num);
-    button.classList.add("selected");
-  }
+function toggle(button, num){
+
+    if(selected.includes(num)){
+
+        selected =
+        selected.filter(n => n !== num);
+
+        button.classList.remove("selected");
+
+    }
+    else{
+
+        selected.push(num);
+
+        button.classList.add("selected");
+
+    }
 }
 
-function calculate() {
-  let sum = selected.reduce((a, b) => a + Number(b), 0);
-  document.getElementById("result").innerText = sum;
+function calculate(operation){
+
+    if(selected.length === 0){
+
+        alert("Select numbers first");
+
+        return;
+    }
+
+    let result =
+    Number(selected[0]);
+
+    for(let i=1;i<selected.length;i++){
+
+        let num =
+        Number(selected[i]);
+
+        if(operation === "+")
+            result += num;
+
+        if(operation === "-")
+            result -= num;
+
+        if(operation === "*")
+            result *= num;
+
+        if(operation === "/")
+            result /= num;
+    }
+
+    document.getElementById("result")
+    .innerText = result;
 }
+
 </script>
 
 </body>
+
 </html>
